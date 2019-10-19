@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     public float playerBoundaryXMin;
     public float playerBoundaryYMax;
     public float playerBoundaryYMin;
+    public List<VegitableType> collectedVegies;
 
 
     // Start is called before the first frame update
@@ -89,6 +90,57 @@ public class PlayerController : MonoBehaviour
             else
                 return 0;
         }
+    }
+
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        Debug.Log("Trigger Enter");
+        if (col.gameObject.GetComponent<Vegitable>())
+        {
+            foreach (VegitableType veg in collectedVegies)
+            {
+                if (veg == col.gameObject.GetComponent<Vegitable>().vegitableType)
+                    return;
+            }
+            collectedVegies.Add(col.gameObject.GetComponent<Vegitable>().vegitableType);
+        }
+
+
+        if (col.gameObject.GetComponent<ChoppingBoard>())
+        {
+
+        }
+
+        //Plate Dequq one veg item if its empty else collect item from plate
+        if (col.gameObject.GetComponent<Plate>())
+        {
+            VegitableType plateVeg = col.gameObject.GetComponent<Plate>().CollectFromPlate();
+            if (plateVeg == 0 && collectedVegies.Count > 0)
+            {
+                col.gameObject.GetComponent<Plate>().OnPlate(collectedVegies[0]);
+                collectedVegies.RemoveAt(0);
+            }
+            else
+            {
+                foreach (VegitableType veg in collectedVegies)
+                {
+                    if (veg == plateVeg)
+                        return;
+                }
+                collectedVegies.Add(plateVeg);
+            }
+        }
+
+        //Trash
+        if (col.gameObject.layer == 8)
+        {
+            if (collectedVegies.Count > 0)
+            {
+                collectedVegies.RemoveAt(0);
+            }
+        }
+
     }
 
 

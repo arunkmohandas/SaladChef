@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum VegitableType
+{
+    A=1,B,C,D,E,F
+};
+
 public class Vegitable : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public VegitableType vegitableType;
 
-    // Update is called once per frame
-    void Update()
+    void OnTriggerEnter2D(Collider2D col)
     {
-        
     }
 }
