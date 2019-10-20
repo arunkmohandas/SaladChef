@@ -26,19 +26,24 @@ public class PlayerController : MonoBehaviour
     public List<VegitableType> choppedVegitables;
     public bool isPlayerIdle;
     public Text vegCollectedText;
+    public int score;
+    public int playingTime;
+    public Text scoreText;
+    public Text timeText;
 
 
     // Start is called before the first frame update
     void Start()
     {
 
-        InitPlayer();
+        // InitPlayer();
     }
 
-    void InitPlayer()
+    public void InitPlayer()
     {
         isPlayerActive = true;
         isPlayerIdle = false;
+        StartCoroutine(UpdateTime());
     }
 
     // Update is called once per frame
@@ -158,7 +163,7 @@ public class PlayerController : MonoBehaviour
                 col.gameObject.GetComponent<Plate>().OnPlate(collectedVegies[0]);
                 collectedVegies.RemoveAt(0);
             }
-            else
+            else if (plateVeg != 0)
             {
                 foreach (VegitableType veg in collectedVegies)
                 {
@@ -198,13 +203,28 @@ public class PlayerController : MonoBehaviour
                     }
                 }
                 _customer.CustomerServedSuccessfully();
+                score += 10;
+                scoreText.text = "Score:" + score.ToString();
+                choppedVegitables.Clear();
+                ShowCollectedVegText();
                 return;
             }
             else
                 goto failed;
             failed:
+            score -= 5;
+            scoreText.text = "Score:" + score.ToString();
+            choppedVegitables.Clear();
+            ShowCollectedVegText();
             Debug.Log("FAILED");
 
+        }
+
+        if(col.gameObject.GetComponent<Pickups>())
+        {
+            Pickups pickups=col.gameObject.GetComponent<Pickups>();
+            OnPickupCollect(pickups.pickupType);
+            pickups.HidePickup();
         }
 
     }
@@ -215,6 +235,45 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < collectedVegies.Count; i++)
             vegCollectedText.text = vegCollectedText.text + " " + collectedVegies[i].ToString();
     }
+
+    IEnumerator UpdateTime()
+    {
+        while (isPlayerActive)
+        {
+            yield return new WaitForSeconds(1);
+            playingTime--;
+            timeText.text="Time:"+playingTime.ToString();
+            if (playingTime <= 0)
+                isPlayerActive = false;
+        }
+
+    }
+    public void ShowResult(bool result)
+    {
+        if (result)
+            Debug.Log("Victory");
+        else
+            Debug.Log("Failed");
+    }
+
+    void OnPickupCollect(PickupType pickupType)
+    {
+        if(pickupType==PickupType.Time)
+        {
+        playingTime+=10;
+        timeText.text="Time:"+playingTime.ToString();
+        }
+        else if(pickupType==PickupType.Speed)
+        {
+            //increase speed
+        }
+        else if(pickupType==PickupType.Score)
+        {
+            //increase score multiplayer
+        }
+    }
+
+    
 
 
 }

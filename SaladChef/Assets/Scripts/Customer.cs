@@ -27,7 +27,6 @@ public class Customer : MonoBehaviour
         progressBarBase.enabled=false;
         progressBar.enabled=false;
         saladRecipeText.text="";
-        Debug.Log("Customer");
     }
     public void InitCustomer()
     {
@@ -61,6 +60,8 @@ public class Customer : MonoBehaviour
         progressBar.enabled=false;
         saladRecipeText.text="";
         Debug.Log("Failed To  Serve");
+        foreach(PlayerController player in GamePlayManager.Instance.players)
+            player.score-=5;
     }
 
     public void CustomerServedSuccessfully()
