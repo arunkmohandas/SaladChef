@@ -22,19 +22,27 @@ public class PlayerController : MonoBehaviour
     public float playerBoundaryYMax;
     public float playerBoundaryYMin;
     public List<VegitableType> collectedVegies;
+    public List<VegitableType> choppedVegitables;
+    public bool isPlayerIdle;
 
 
     // Start is called before the first frame update
     void Start()
     {
 
+        InitPlayer();
+    }
 
+    void InitPlayer()
+    {
+        isPlayerActive = true;
+        isPlayerIdle = false;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (!isPlayerActive)
+        if (!isPlayerActive || isPlayerIdle)
             return;
 
         //Get input
@@ -95,21 +103,40 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        Debug.Log("Trigger Enter");
         if (col.gameObject.GetComponent<Vegitable>())
         {
+            Vegitable _vegitable = col.gameObject.GetComponent<Vegitable>();
+            if (collectedVegies.Count >= 2)
+                return;
             foreach (VegitableType veg in collectedVegies)
             {
-                if (veg == col.gameObject.GetComponent<Vegitable>().vegitableType)
+                if (veg == _vegitable.vegitableType)
                     return;
             }
-            collectedVegies.Add(col.gameObject.GetComponent<Vegitable>().vegitableType);
+            collectedVegies.Add(_vegitable.vegitableType);
         }
 
 
         if (col.gameObject.GetComponent<ChoppingBoard>())
         {
+            ChoppingBoard _choppingBoard = col.gameObject.GetComponent<ChoppingBoard>();
+            if (collectedVegies.Count > 0)
+            {
+                //Chop Vegitables
+                _choppingBoard.ChopVegitable(collectedVegies[0], this);
+                collectedVegies.RemoveAt(0);
+                transform.position += new Vector3(0, 2, 0);
 
+            }
+            else
+            {
+                //collect Chopped Vegitables
+                choppedVegitables.Clear();
+                choppedVegitables = new List<VegitableType>(_choppingBoard.CollectChoppedVegitables());
+                _choppingBoard.choppedVegitables.Clear();
+
+
+            }
         }
 
         //Plate Dequq one veg item if its empty else collect item from plate
@@ -139,6 +166,28 @@ public class PlayerController : MonoBehaviour
             {
                 collectedVegies.RemoveAt(0);
             }
+        }
+
+        if (col.gameObject.GetComponent<Customer>())
+        {
+            Customer _customer = col.gameObject.GetComponent<Customer>();
+            if (choppedVegitables.Count == _customer.saladRecipe.Count)
+            {
+                for (int i = 0; i < choppedVegitables.Count; i++)
+                {
+                    if (choppedVegitables[i] != _customer.saladRecipe[i])
+                    {
+                        goto failed;
+                    }
+                }
+                _customer.CustomerServedSuccessfully();
+                return;
+            }
+            else
+                goto failed;
+            failed:
+            Debug.Log("FAILED");
+
         }
 
     }
