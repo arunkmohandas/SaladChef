@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 //Input Controls for Multiplayer
 public enum Controller
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public List<VegitableType> collectedVegies;
     public List<VegitableType> choppedVegitables;
     public bool isPlayerIdle;
+    public Text vegCollectedText;
 
 
     // Start is called before the first frame update
@@ -114,6 +116,7 @@ public class PlayerController : MonoBehaviour
                     return;
             }
             collectedVegies.Add(_vegitable.vegitableType);
+            ShowCollectedVegText();
         }
 
 
@@ -127,6 +130,8 @@ public class PlayerController : MonoBehaviour
                 collectedVegies.RemoveAt(0);
                 transform.position += new Vector3(0, 2, 0);
 
+                ShowCollectedVegText();
+
             }
             else
             {
@@ -135,8 +140,13 @@ public class PlayerController : MonoBehaviour
                 choppedVegitables = new List<VegitableType>(_choppingBoard.CollectChoppedVegitables());
                 _choppingBoard.choppedVegitables.Clear();
 
+                vegCollectedText.text = "";
+                for (int i = 0; i < choppedVegitables.Count; i++)
+                    vegCollectedText.text = vegCollectedText.text + " " + choppedVegitables[i].ToString();
+
 
             }
+
         }
 
         //Plate Dequq one veg item if its empty else collect item from plate
@@ -157,6 +167,7 @@ public class PlayerController : MonoBehaviour
                 }
                 collectedVegies.Add(plateVeg);
             }
+            ShowCollectedVegText();
         }
 
         //Trash
@@ -166,6 +177,12 @@ public class PlayerController : MonoBehaviour
             {
                 collectedVegies.RemoveAt(0);
             }
+            else
+            {
+                if (choppedVegitables.Count > 0)
+                    choppedVegitables.RemoveAt(0);
+            }
+            ShowCollectedVegText();
         }
 
         if (col.gameObject.GetComponent<Customer>())
@@ -190,6 +207,13 @@ public class PlayerController : MonoBehaviour
 
         }
 
+    }
+
+    void ShowCollectedVegText()
+    {
+        vegCollectedText.text = "";
+        for (int i = 0; i < collectedVegies.Count; i++)
+            vegCollectedText.text = vegCollectedText.text + " " + collectedVegies[i].ToString();
     }
 
 
