@@ -30,7 +30,9 @@ public class PlayerController : MonoBehaviour
     public int playingTime;
     public Text scoreText;
     public Text timeText;
-
+    public bool isReadyForPickup;
+    private int speedPickupActiveTime = 20;
+    public Text victoryText;
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +45,7 @@ public class PlayerController : MonoBehaviour
     {
         isPlayerActive = true;
         isPlayerIdle = false;
+        victoryText.text="";
         StartCoroutine(UpdateTime());
     }
 
@@ -133,7 +136,7 @@ public class PlayerController : MonoBehaviour
                 //Chop Vegitables
                 _choppingBoard.ChopVegitable(collectedVegies[0], this);
                 collectedVegies.RemoveAt(0);
-                transform.position += new Vector3(0, 2, 0);
+                transform.position += new Vector3(0, 1, 0);
 
                 ShowCollectedVegText();
 
@@ -203,8 +206,12 @@ public class PlayerController : MonoBehaviour
                     }
                 }
                 _customer.CustomerServedSuccessfully();
-                score += 10;
-                scoreText.text = "Score:" + score.ToString();
+                AddScore(10);
+                if (_customer.progressBar.fillAmount < .7f)
+                {
+                    isReadyForPickup = true;
+                    GamePlayManager.Instance.InitiatePickup();
+                }
                 choppedVegitables.Clear();
                 ShowCollectedVegText();
                 return;
@@ -212,17 +219,17 @@ public class PlayerController : MonoBehaviour
             else
                 goto failed;
             failed:
-            score -= 5;
-            scoreText.text = "Score:" + score.ToString();
+            _customer.DecreaseWaitingTimeFaster();
+            AddScore(-5);
             choppedVegitables.Clear();
             ShowCollectedVegText();
             Debug.Log("FAILED");
 
         }
 
-        if(col.gameObject.GetComponent<Pickups>())
+        if (col.gameObject.GetComponent<Pickups>() && isReadyForPickup)
         {
-            Pickups pickups=col.gameObject.GetComponent<Pickups>();
+            Pickups pickups = col.gameObject.GetComponent<Pickups>();
             OnPickupCollect(pickups.pickupType);
             pickups.HidePickup();
         }
@@ -242,7 +249,7 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             playingTime--;
-            timeText.text="Time:"+playingTime.ToString();
+            timeText.text = "Time:" + playingTime.ToString();
             if (playingTime <= 0)
                 isPlayerActive = false;
         }
@@ -251,29 +258,42 @@ public class PlayerController : MonoBehaviour
     public void ShowResult(bool result)
     {
         if (result)
-            Debug.Log("Victory");
-        else
-            Debug.Log("Failed");
+           victoryText.text=gameObject.name+" Wins...";
     }
 
     void OnPickupCollect(PickupType pickupType)
     {
-        if(pickupType==PickupType.Time)
+        if (pickupType == PickupType.Time)
         {
-        playingTime+=10;
-        timeText.text="Time:"+playingTime.ToString();
+            playingTime += 10;
+            timeText.text = "Time:" + playingTime.ToString();
         }
-        else if(pickupType==PickupType.Speed)
+        else if (pickupType == PickupType.Speed)
         {
             //increase speed
+            StartCoroutine(SpeedPickupCollected());
         }
-        else if(pickupType==PickupType.Score)
+        else if (pickupType == PickupType.Score)
         {
-            //increase score multiplayer
+            AddScore(10);
         }
+        isReadyForPickup = false;
+
     }
 
-    
+    public void AddScore(int _score)
+    {
+        score += _score;
+        scoreText.text = "Score:" + score.ToString();
+
+    }
+
+    IEnumerator SpeedPickupCollected()
+    {
+        movingSpeed = movingSpeed * 2;
+        yield return new WaitForSeconds(speedPickupActiveTime);
+        movingSpeed = movingSpeed * .5f;
+    }
 
 
 }

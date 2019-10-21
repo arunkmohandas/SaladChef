@@ -17,6 +17,7 @@ public class Customer : MonoBehaviour
     public Text saladRecipeText;
     public Image progressBarBase;
     public Image progressBar;
+    private float timeMultiplier=1;
 
     void Start()
     {
@@ -34,6 +35,7 @@ public class Customer : MonoBehaviour
         //start timer
         renderer1.enabled=true;
         collider1.enabled=true;
+        timeMultiplier=1;
         isActive = true;
         isServed = false;
         SetSaladRecipe();
@@ -48,7 +50,7 @@ public class Customer : MonoBehaviour
         float waitingTime=customerWaitingTime;
         while(waitingTime>0)
         {
-            waitingTime-=Time.deltaTime;
+            waitingTime-=Time.deltaTime*timeMultiplier;
             progressBar.fillAmount=1-(waitingTime/customerWaitingTime);
             yield return new WaitForFixedUpdate();
         }
@@ -61,7 +63,9 @@ public class Customer : MonoBehaviour
         saladRecipeText.text="";
         Debug.Log("Failed To  Serve");
         foreach(PlayerController player in GamePlayManager.Instance.players)
-            player.score-=5;
+        {
+            player.AddScore(-5);
+        }
     }
 
     public void CustomerServedSuccessfully()
@@ -107,6 +111,12 @@ public class Customer : MonoBehaviour
 
         for(int i=0;i<numIngrediants;i++)
             saladRecipeText.text=saladRecipeText.text+" "+saladRecipe[i].ToString();
+    }
+
+    public void DecreaseWaitingTimeFaster()
+    {
+        //Angry Customer
+        timeMultiplier=1.5f;
     }
 
 }
