@@ -22,12 +22,14 @@ public class Pickups : MonoBehaviour
         timerCoroutine = StartCoroutine(StartPickupTimer());
     }
 
+    //Pickup timer
     IEnumerator StartPickupTimer()
     {
         yield return new WaitForSeconds(pickupTimer);
         HidePickup();
     }
 
+    //Hide Pickup object
     public void HidePickup()
     {
         if (timerCoroutine != null)

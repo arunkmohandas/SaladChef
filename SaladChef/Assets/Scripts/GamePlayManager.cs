@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
+using UnityEngine.UI;
 
 
 public class GamePlayManager : MonoBehaviour
@@ -36,6 +38,10 @@ public class GamePlayManager : MonoBehaviour
     public GameObject[] pickupObjects;
     public Transform pickupObjParent;
     public GameObject resetButton;
+    public GameObject highScorePopup;
+    public Text highscoreText;
+    public int[] highScores;
+    // public string[] highScoredPlayers;
 
 
     // Start is called before the first frame update
@@ -43,13 +49,17 @@ public class GamePlayManager : MonoBehaviour
     {
         players = GetComponentsInChildren<PlayerController>();
         customers = GetComponentsInChildren<Customer>();
+        highScorePopup.SetActive(false);
+        resetButton.SetActive(false);
+        GetHighScores();
+
+
         InitGame();
 
     }
 
     public void InitGame()
     {
-        resetButton.SetActive(false);
         StartCoroutine(InitializeNewCustomer());
         for (int i = 0; i < players.Length; i++)
             players[i].InitPlayer();
@@ -83,7 +93,7 @@ public class GamePlayManager : MonoBehaviour
         }
         if (numActiveCustomers < 2)
         {
-            int i = Random.Range(0, customers.Length);
+            int i = UnityEngine.Random.Range(0, customers.Length);
             if (!customers[i].isActive)
             {
                 customers[i].InitCustomer();
@@ -91,6 +101,7 @@ public class GamePlayManager : MonoBehaviour
         }
     }
 
+    //Initialize new customer on a time interval
     IEnumerator InitializeNewCustomer()
     {
 
@@ -123,10 +134,11 @@ public class GamePlayManager : MonoBehaviour
     //     }
     // }
 
+    //Enable Pickup Object
     public void InitiatePickup()
     {
-        int pickupTypeValue = Random.Range(0, pickupObjects.Length);
-        int pickupPosValue = Random.Range(0, pickupTrans.Length);
+        int pickupTypeValue = UnityEngine.Random.Range(0, pickupObjects.Length);
+        int pickupPosValue = UnityEngine.Random.Range(0, pickupTrans.Length);
         Pickups pickups = Instantiate(pickupObjects[pickupTypeValue]).GetComponent<Pickups>();
         pickups.transform.SetParent(pickupObjParent);
         pickups.InitPickup(pickupTrans[pickupPosValue].position);
@@ -136,6 +148,48 @@ public class GamePlayManager : MonoBehaviour
     {
         SceneManager.LoadScene(0);
 
+    }
+
+    void GetHighScores()
+    {
+        highScores = PlayerPrefsX.GetIntArray("Highscores", 0, 10);
+    }
+
+    void SetHighScores()
+    {
+
+        Array.Sort(highScores);
+        Array.Reverse(highScores);
+        PlayerPrefsX.SetIntArray("Highscores", highScores);
+    }
+
+    //Sort And Save High Score
+    public void PostToHighScore(int score)
+    {
+        for (int i = 0; i < highScores.Length; i++)
+        {
+            if (score > highScores[i])
+            {
+                for (int j = i; j < highScores.Length - 1; j++)
+                {
+                    highScores[j + 1] = highScores[j];
+                }
+                highScores[i] = score;
+                break;
+            }
+        }
+        SetHighScores();
+        highScorePopup.SetActive(true);
+        highscoreText.text="";
+        for (int i = 0; i < highScores.Length; i++)
+        {
+            if (highScores[i] > 0)
+            {
+                highscoreText.text =  highscoreText.text+(i + 1).ToString() + ". " + highScores[i] + "\n";
+            }
+            else
+                break;
+        }
     }
 
 

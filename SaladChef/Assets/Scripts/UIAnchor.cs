@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Move UI Text along with player
 public class UIAnchor : MonoBehaviour
 {
     public Transform parentGameObject;

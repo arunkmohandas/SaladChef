@@ -18,6 +18,7 @@ public class Customer : MonoBehaviour
     public Image progressBarBase;
     public Image progressBar;
     private float timeMultiplier=1;
+    public int scoreValue=10;
 
     void Start()
     {
@@ -29,6 +30,8 @@ public class Customer : MonoBehaviour
         progressBar.enabled=false;
         saladRecipeText.text="";
     }
+
+    //Initialize Customer
     public void InitCustomer()
     {
         //enable renderer
@@ -45,10 +48,11 @@ public class Customer : MonoBehaviour
 
     }
 
+    //Customer Waiting Time
     IEnumerator StartTimer()
     {
         float waitingTime=customerWaitingTime;
-        while(waitingTime>0)
+        while(waitingTime>0&&GamePlayManager.Instance.isGameRunning)
         {
             waitingTime-=Time.deltaTime*timeMultiplier;
             progressBar.fillAmount=1-(waitingTime/customerWaitingTime);
@@ -64,7 +68,7 @@ public class Customer : MonoBehaviour
         Debug.Log("Failed To  Serve");
         foreach(PlayerController player in GamePlayManager.Instance.players)
         {
-            player.AddScore(-5);
+            player.AddScore(-2);
         }
     }
 
@@ -77,7 +81,6 @@ public class Customer : MonoBehaviour
         progressBarBase.enabled=false;
         progressBar.enabled=false;
         saladRecipeText.text="";
-        Debug.Log("Success");
         StopCoroutine(timerCoroutine);
         //disable renderer
     }
@@ -86,6 +89,7 @@ public class Customer : MonoBehaviour
     void SetSaladRecipe()
     {
         //for time being max ingrediants is set to 3
+        scoreValue=10;
         int numIngrediants = Random.Range(1, 4);
         customerWaitingTime=custWaitingTimePerItem*numIngrediants;
         Debug.Log("num ingrediants:" + numIngrediants);
@@ -111,6 +115,7 @@ public class Customer : MonoBehaviour
 
         for(int i=0;i<numIngrediants;i++)
             saladRecipeText.text=saladRecipeText.text+" "+saladRecipe[i].ToString();
+            scoreValue=scoreValue*numIngrediants;
     }
 
     public void DecreaseWaitingTimeFaster()

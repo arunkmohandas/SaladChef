@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
         // InitPlayer();
     }
 
+    //Initialize Player
     public void InitPlayer()
     {
         isPlayerActive = true;
@@ -110,9 +111,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
+    
     void OnTriggerEnter2D(Collider2D col)
     {
+        //Collect Vegitables
         if (col.gameObject.GetComponent<Vegitable>())
         {
             Vegitable _vegitable = col.gameObject.GetComponent<Vegitable>();
@@ -126,7 +128,6 @@ public class PlayerController : MonoBehaviour
             collectedVegies.Add(_vegitable.vegitableType);
             ShowCollectedVegText();
         }
-
 
         if (col.gameObject.GetComponent<ChoppingBoard>())
         {
@@ -151,13 +152,14 @@ public class PlayerController : MonoBehaviour
                 vegCollectedText.text = "";
                 for (int i = 0; i < choppedVegitables.Count; i++)
                     vegCollectedText.text = vegCollectedText.text + " " + choppedVegitables[i].ToString();
+                    vegCollectedText.color=Color.red;
 
 
             }
 
         }
 
-        //Plate Dequq one veg item if its empty else collect item from plate
+        //Plate store one veg item if its empty else collect item from plate
         if (col.gameObject.GetComponent<Plate>())
         {
             VegitableType plateVeg = col.gameObject.GetComponent<Plate>().CollectFromPlate();
@@ -193,6 +195,7 @@ public class PlayerController : MonoBehaviour
             ShowCollectedVegText();
         }
 
+        //Serve Salad to Customer
         if (col.gameObject.GetComponent<Customer>())
         {
             Customer _customer = col.gameObject.GetComponent<Customer>();
@@ -206,7 +209,7 @@ public class PlayerController : MonoBehaviour
                     }
                 }
                 _customer.CustomerServedSuccessfully();
-                AddScore(10);
+                AddScore(_customer.scoreValue);
                 if (_customer.progressBar.fillAmount < .7f)
                 {
                     isReadyForPickup = true;
@@ -223,7 +226,6 @@ public class PlayerController : MonoBehaviour
             AddScore(-5);
             choppedVegitables.Clear();
             ShowCollectedVegText();
-            Debug.Log("FAILED");
 
         }
 
@@ -241,6 +243,7 @@ public class PlayerController : MonoBehaviour
         vegCollectedText.text = "";
         for (int i = 0; i < collectedVegies.Count; i++)
             vegCollectedText.text = vegCollectedText.text + " " + collectedVegies[i].ToString();
+            vegCollectedText.color=Color.green;
     }
 
     IEnumerator UpdateTime()
@@ -258,7 +261,10 @@ public class PlayerController : MonoBehaviour
     public void ShowResult(bool result)
     {
         if (result)
+        {
            victoryText.text=gameObject.name+" Wins...";
+           GamePlayManager.Instance.PostToHighScore(score);
+        }
     }
 
     void OnPickupCollect(PickupType pickupType)
@@ -275,7 +281,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (pickupType == PickupType.Score)
         {
-            AddScore(10);
+            AddScore(50);
         }
         isReadyForPickup = false;
 
